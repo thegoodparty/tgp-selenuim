@@ -47,16 +47,27 @@ def kill_idle_process():
 
         except psutil.NoSuchProcess:
             pass
-res = requests.get('https://api.goodparty.org/api/v1/new-candidates')
-# print(res.text)
-candidates = json.loads(res.text)['candidates']
-for key in candidates:
-	# print(key, candidates[key])
-	for candidate in candidates[key]:
-		print(candidate['id'])
-		driver = getDriver()
-		driver.get('https://goodparty.org/share-image/{}'.format(candidate['id']))
-		time.sleep(10)
-		print(driver.page_source)
-		driver.quit()
-		kill_idle_process()
+domains = [
+    {
+        'backend': 'https://api.goodparty.org/api/v1/new-candidates',
+        'frontend': 'https://goodparty.org/share-image/{}'
+    },
+    {
+        'backend': 'https://api-dev.goodparty.org/api/v1/new-candidates',
+        'frontend': 'https://dev.goodparty.org/share-image/{}'
+    },
+]
+for domain in domains:
+    res = requests.get(domain['backend'])
+    # print(res.text)
+    candidates = json.loads(res.text)['candidates']
+    for key in candidates:
+        # print(key, candidates[key])
+        for candidate in candidates[key]:
+            print(candidate['id'])
+            driver = getDriver()
+            driver.get(domain['frontend'].format(candidate['id']))
+            time.sleep(10)
+            print(driver.page_source)
+            driver.quit()
+            kill_idle_process()
